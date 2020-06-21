@@ -17,11 +17,22 @@ public class LinkStubService {
         this.linkStubRepository = linkStubRepository;
     }
 
-    public Optional<LinkStub> getLinkStub(String urlHash) {
+    public Optional<LinkStub> getLinkStubByHash(String urlHash) {
         return linkStubRepository.findById(urlHash);
     }
 
+    public Optional<LinkStub> getLinkStubByUrl(String originalUrl) {
+        return linkStubRepository.findByOriginalUrl(originalUrl);
+    }
+
     public LinkStub createLinkStub(String originalUrl) {
-        return linkStubRepository.save(new LinkStub(originalUrl));
+        LinkStub linkStubInDatabase;
+        Optional<LinkStub> searchResult = linkStubRepository.findByOriginalUrl(originalUrl);
+        if (searchResult.isEmpty()) {
+            linkStubInDatabase = linkStubRepository.save(new LinkStub(originalUrl));
+        } else {
+            linkStubInDatabase = searchResult.get();
+        }
+        return linkStubInDatabase;
     }
 }

@@ -35,13 +35,24 @@ public class LinkStubController {
     @PostMapping("/linkstub")
     ResponseEntity<LinkStub> createLinkStub(@Valid @RequestBody LinkStub linkStub) throws URISyntaxException {
         log.info("Request to create link stub: {}", linkStub);
-        LinkStub result = linkStubService.createLinkStub(linkStub.getOriginalUrl());
-        return ResponseEntity.created(new URI("/api/linkstub/" + result.getUrlHash())).body(result);
+        Optional<LinkStub> searchResult = linkStubService.getLinkStubByUrl(linkStub.getOriginalUrl());
+        ResponseEntity<LinkStub> response;
+        if (searchResult.isEmpty()) {
+            // 201 if created new
+            LinkStub saveResult = linkStubService.createLinkStub(linkStub.getOriginalUrl());
+            response = ResponseEntity
+                    .created(new URI("/api/linkstub/" + saveResult.getUrlHash()))
+                    .body(saveResult);
+        } else {
+            // 200 if already existed
+            response = ResponseEntity.ok().body(searchResult.get());
+        }
+        return response;
     }
 
     @GetMapping("/{urlHash}")
     public ResponseEntity<LinkStub> redirectLinkStub(@PathVariable String urlHash) throws URISyntaxException {
-        Optional<LinkStub> linkStub = linkStubService.getLinkStub(urlHash);
+        Optional<LinkStub> linkStub = linkStubService.getLinkStubByHash(urlHash);
         ResponseEntity<LinkStub> response;
         log.info("Redirect request for URL hash: {}", urlHash);
         if (linkStub.isPresent()) {
