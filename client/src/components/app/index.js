@@ -1,5 +1,3 @@
 import App from "./App";
 
-export {
-    App as default
-};
+export { App as default };

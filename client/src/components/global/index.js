@@ -1,5 +1,3 @@
 import Global from "./Global";
 
-export {
-    Global as default
-};
+export { Global as default };

@@ -9,10 +9,6 @@ const StyledHomeContainer = styled.div`
     font-family: Tahoma, Geneva, sans-serif;
 `;
 
-const Home = () => (
-    <StyledHomeContainer>
-        Link Stub Application
-    </StyledHomeContainer>
-);
+const Home = () => <StyledHomeContainer>Link Stub Application</StyledHomeContainer>;
 
 export default Home;

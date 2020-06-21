@@ -3,10 +3,10 @@ import Home from "@components/home";
 import Global from "@components/global";
 
 const App = () => (
-  <>
-      <Global/>
-      <Home/>
-  </>
+    <>
+        <Global />
+        <Home />
+    </>
 );
 
 export default App;
