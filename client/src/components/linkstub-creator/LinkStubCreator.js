@@ -88,8 +88,8 @@ const LinkStubCreator = () => {
                 {urlHash && (
                     <Box>
                         <span>Stub: </span>
-                        <Link href={`http://localhost:8080/api/${urlHash}`} target="_blank" rel="noreferrer">
-                            {`http://localhost:8080/api/${urlHash}`}
+                        <Link href={`${process.env.HOST}/api/${urlHash}`} target="_blank" rel="noreferrer">
+                            {`${process.env.HOST}/api/${urlHash}`}
                         </Link>
                     </Box>
                 )}

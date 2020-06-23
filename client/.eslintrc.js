@@ -28,7 +28,8 @@ module.exports = {
     "jest/no-focused-tests": "error",
     "jest/no-identical-title": "error",
     "jest/prefer-to-have-length": "warn",
-    "jest/valid-expect": "error"
+    "jest/valid-expect": "error",
+    "no-process-env": "off"
   },
   parser: "babel-eslint",
   settings: {
@@ -36,5 +37,8 @@ module.exports = {
       // so react version is same as that being used
       version: require("./package.json").dependencies.react
     }
+  },
+  globals: {
+    process: true
   }
 };

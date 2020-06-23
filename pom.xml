@@ -7,10 +7,11 @@
     <groupId>net.wasicek</groupId>
     <artifactId>linkstub</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <name>LinkStub Project</name>
     <packaging>pom</packaging>
 
     <modules>
         <module>server</module>
     </modules>
-    
+
 </project>

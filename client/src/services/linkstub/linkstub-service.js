@@ -3,7 +3,7 @@ const endpoints = {
 };
 
 const createLinkStub = async (linkStub) => {
-    return await fetch(`http://localhost:8080/${endpoints.CREATE_LINKSTUB}`, {
+    return await fetch(`${process.env.HOST}/${endpoints.CREATE_LINKSTUB}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json;charset=utf-8",
