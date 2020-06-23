@@ -27,7 +27,7 @@ describe("linkStubService", function () {
 
             expect(fetch.mock.calls).toHaveLength(1);
             const [urlArg, optionsArg] = fetch.mock.calls[0];
-            expect(urlArg).toEqual(`http://localhost:8080/${endpoints.CREATE_LINKSTUB}`);
+            expect(urlArg).toEqual(`${process.env.HOST}/${endpoints.CREATE_LINKSTUB}`);
             expect(optionsArg.method).toEqual("POST");
             expect(JSON.parse(optionsArg.body)).toEqual(requestedLinkStub);
             expect(resultBody).toEqual(mockSuccessResponse);
