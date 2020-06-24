@@ -22,7 +22,6 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api")
 @Slf4j
 public class LinkStubController {
 
@@ -42,7 +41,7 @@ public class LinkStubController {
             // 201 if created new
             LinkStub saveResult = linkStubService.createLinkStub(linkStub.getOriginalUrl());
             response = ResponseEntity
-                    .created(new URI("/api/linkstub/" + saveResult.getUrlHash()))
+                    .created(new URI("/linkstub/" + saveResult.getUrlHash()))
                     .body(saveResult);
         } else {
             LinkStub foundStub = searchResult.get();
@@ -53,7 +52,7 @@ public class LinkStubController {
         return response;
     }
 
-    @GetMapping("/{urlHash}")
+    @GetMapping("/{urlHash:[a-zA-Z0-9]{8}}")
     public ResponseEntity<LinkStub> redirectLinkStub(@PathVariable String urlHash) throws URISyntaxException {
         Optional<LinkStub> searchResult = linkStubService.getLinkStubByHash(urlHash);
         ResponseEntity<LinkStub> response;

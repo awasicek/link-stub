@@ -1,5 +1,5 @@
 const endpoints = {
-    CREATE_LINKSTUB: "api/linkstub",
+    CREATE_LINKSTUB: "linkstub",
 };
 
 const createLinkStub = async (linkStub) => {
