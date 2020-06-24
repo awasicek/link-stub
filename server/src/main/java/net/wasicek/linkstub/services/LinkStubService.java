@@ -10,6 +10,8 @@ import java.util.Optional;
 @Service
 public class LinkStubService {
 
+    public static final int MAX_NUM_USES = 10;
+
     private LinkStubRepository linkStubRepository;
 
     @Autowired
@@ -26,13 +28,20 @@ public class LinkStubService {
     }
 
     public LinkStub createLinkStub(String originalUrl) {
-        LinkStub linkStubInDatabase;
-        Optional<LinkStub> searchResult = linkStubRepository.findByOriginalUrl(originalUrl);
-        if (searchResult.isEmpty()) {
-            linkStubInDatabase = linkStubRepository.save(new LinkStub(originalUrl));
-        } else {
-            linkStubInDatabase = searchResult.get();
-        }
-        return linkStubInDatabase;
+        return linkStubRepository.save(new LinkStub(originalUrl));
+    }
+
+    public boolean isLinkStubValid(LinkStub linkStub) {
+        return linkStub.getNumTimesUsed() < MAX_NUM_USES;
+    }
+
+    public void processLinkStubUse(LinkStub linkStub) {
+        linkStub.setNumTimesUsed(linkStub.getNumTimesUsed() + 1);
+        linkStubRepository.save(linkStub);
+    }
+
+    public void resetValidity(LinkStub linkStub) {
+        linkStub.setNumTimesUsed(0);
+        linkStubRepository.save(linkStub);
     }
 }

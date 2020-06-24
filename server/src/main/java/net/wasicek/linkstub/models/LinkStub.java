@@ -26,9 +26,12 @@ public class LinkStub {
     @CreationTimestamp
     private Instant createdOn;
 
+    private int numTimesUsed;
+
     public LinkStub(String originalUrl) {
         HashCode hashCode = Hashing.murmur3_32().hashString(originalUrl, StandardCharsets.UTF_8);
         this.urlHash = hashCode.toString();
         this.originalUrl = originalUrl;
+        this.numTimesUsed = 0;
     }
 }
