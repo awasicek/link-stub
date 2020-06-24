@@ -1,5 +1,6 @@
 package net.wasicek.linkstub.controllers;
 
+import net.wasicek.linkstub.exceptions.InvalidLinkStubException;
 import net.wasicek.linkstub.models.LinkStub;
 import net.wasicek.linkstub.services.LinkStubService;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -35,6 +37,7 @@ public class LinkStubControllerTest {
     @Test
     public void createLinkStub_shouldCreateNewLinkStub_whenItDoesNotExist() throws URISyntaxException {
         LinkStub linkStub = new LinkStub(TEST_URL);
+        when(linkStubService.isValidUrl(any())).thenReturn(true);
         when(linkStubService.getLinkStubByUrl(anyString())).thenReturn(Optional.empty());
         when(linkStubService.createLinkStub(anyString())).thenReturn(linkStub);
 
@@ -46,11 +49,23 @@ public class LinkStubControllerTest {
     @Test
     public void createLinkStub_shouldRespondWithExistingLinkStub_whenItAlreadyExists() throws URISyntaxException {
         LinkStub linkStub = new LinkStub(TEST_URL);
+        when(linkStubService.isValidUrl(any())).thenReturn(true);
         when(linkStubService.getLinkStubByUrl(anyString())).thenReturn(Optional.of(linkStub));
 
         ResponseEntity<LinkStub> response = linkStubController.createLinkStub(linkStub);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(linkStub, response.getBody());
+    }
+
+    @Test
+    public void createLinkStub_shouldRespondBadRequest_whenProvidedInvalidUrl() {
+        LinkStub linkStub = new LinkStub(TEST_URL);
+        when(linkStubService.isValidUrl(any())).thenReturn(false);
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> {
+            linkStubController.createLinkStub(linkStub);
+        });
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
     }
 
     @Test
@@ -75,13 +90,15 @@ public class LinkStubControllerTest {
     }
 
     @Test
-    public void redirectLinkStub_shouldRespondGone_whenLinkStubIsInvalidated() throws URISyntaxException {
+    public void redirectLinkStub_shouldRespondGone_whenLinkStubIsInvalidated() {
         LinkStub linkStub = new LinkStub(TEST_URL);
         when(linkStubService.getLinkStubByHash(anyString())).thenReturn(Optional.of(linkStub));
         when(linkStubService.isLinkStubValid(eq(linkStub))).thenReturn(false);
 
-        ResponseEntity<LinkStub> response = linkStubController.redirectLinkStub(linkStub.getUrlHash());
-        assertEquals(HttpStatus.GONE, response.getStatusCode());
+        InvalidLinkStubException ex = assertThrows(InvalidLinkStubException.class, () -> {
+            linkStubController.redirectLinkStub(linkStub.getUrlHash());
+        });
+        assertEquals(HttpStatus.GONE, ex.getStatus());
     }
 
     @Test

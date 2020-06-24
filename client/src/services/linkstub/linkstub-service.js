@@ -12,8 +12,24 @@ const createLinkStub = async (linkStub) => {
     });
 };
 
+/**
+ * Attempts to fix a malformed URL if it detects no proper protocol. Otherwise
+ * returns the url as provided.
+ * @param {string} url
+ * @returns {string}
+ */
+const processUrlForDefects = (url) => {
+    const protocolRegex = /^(https:\/\/)|(http:\/\/)/;
+    if (!protocolRegex.test(url)) {
+        return "http://" + url;
+    } else {
+        return url;
+    }
+};
+
 const linkStubService = {
     createLinkStub,
+    processUrlForDefects,
 };
 
 const linkStubConstants = {

@@ -17,6 +17,12 @@ const StyledTextField = styled(TextField)`
     min-width: 250px;
 `;
 
+const LinkLabel = styled.span`
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-variant: small-caps;
+    font-size: 1.25rem;
+`;
+
 const LinkStubCreator = () => {
     const [url, setUrl] = useState("");
     const [urlHash, setUrlHash] = useState("");
@@ -33,26 +39,26 @@ const LinkStubCreator = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(`submitted: ${url}`);
-
+        const processedUrl = linkStubService.processUrlForDefects(url);
         // validate on frontend to stop from making unnecessary bad requests
-        if (isValidHttpUrl(url)) {
+        if (isValidHttpUrl(processedUrl)) {
             setIsUrlValid(true);
             try {
-                const response = await linkStubService.createLinkStub({ originalUrl: url });
+                const response = await linkStubService.createLinkStub({ originalUrl: processedUrl });
                 if (response.status === 200 || response.status === 201) {
                     setIsError(false);
                     const json = await response.json();
                     setUrlHash(_get(json, "urlHash", ""));
+                } else if (response.status === 400) {
+                    setIsUrlValid(false);
                 } else {
                     setIsError(true);
                     const json = await response.json();
-                    // TODO -- handle error response in UI
-                    console.warn(`failure ${response.status}`, json);
+                    console.error(`Failure creating Link Stub. Error code: ${response.status}`, json);
                 }
             } catch (err) {
                 setIsError(true);
-                // TODO -- fetch only throws if API doesn't return a response etc (400/500 are still considered success)
+                // fetch only throws if API doesn't return a response etc (400/500 are still considered success)
                 console.error(err);
             }
         } else {
@@ -70,7 +76,7 @@ const LinkStubCreator = () => {
                             label="Enter Link"
                             onChange={handleChange}
                             error={isUrlValid === false}
-                            helperText={isUrlValid === false && "Invalid URL - must start with http: or https:"}
+                            helperText={isUrlValid === false && "Invalid URL"}
                         />
                         <ButtonWrapper>
                             <Button
@@ -87,7 +93,7 @@ const LinkStubCreator = () => {
                 </Box>
                 {urlHash && (
                     <Box>
-                        <span>Stub: </span>
+                        <LinkLabel>Stub: </LinkLabel>
                         <Link href={`${process.env.HOST}/${urlHash}`} target="_blank" rel="noreferrer">
                             {`${process.env.HOST}/${urlHash}`}
                         </Link>

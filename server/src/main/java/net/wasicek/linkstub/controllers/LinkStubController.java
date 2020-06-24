@@ -1,6 +1,7 @@
 package net.wasicek.linkstub.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import net.wasicek.linkstub.exceptions.InvalidLinkStubException;
 import net.wasicek.linkstub.models.LinkStub;
 import net.wasicek.linkstub.services.LinkStubService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,11 +35,15 @@ public class LinkStubController {
     @PostMapping("/linkstub")
     ResponseEntity<LinkStub> createLinkStub(@Valid @RequestBody LinkStub linkStub) throws URISyntaxException {
         log.info("Request to create link stub: {}", linkStub);
-        Optional<LinkStub> searchResult = linkStubService.getLinkStubByUrl(linkStub.getOriginalUrl());
+        String providedUrl = linkStub.getOriginalUrl();
+        if (!linkStubService.isValidUrl(providedUrl)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Invalid URL: %s", providedUrl));
+        }
+        Optional<LinkStub> searchResult = linkStubService.getLinkStubByUrl(providedUrl);
         ResponseEntity<LinkStub> response;
         if (searchResult.isEmpty()) {
             // 201 if created new
-            LinkStub saveResult = linkStubService.createLinkStub(linkStub.getOriginalUrl());
+            LinkStub saveResult = linkStubService.createLinkStub(providedUrl);
             response = ResponseEntity
                     .created(new URI("/linkstub/" + saveResult.getUrlHash()))
                     .body(saveResult);
@@ -65,8 +69,7 @@ public class LinkStubController {
         } else {
             LinkStub foundStub = searchResult.get();
             if (!linkStubService.isLinkStubValid(foundStub)) {
-                // need to disable caching so requests to recreated links work
-                response = ResponseEntity.status(HttpStatus.GONE).cacheControl(CacheControl.noCache()).body(foundStub);
+                throw new InvalidLinkStubException(String.format("The Link Stub http://linkstub.ninja/%s has expired.", urlHash));
             } else {
                 URI originalLocation = new URI(foundStub.getOriginalUrl());
                 HttpHeaders httpHeaders = new HttpHeaders();
