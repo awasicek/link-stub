@@ -17,6 +17,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,12 +57,32 @@ public class LinkStubControllerTest {
     public void redirectLinkStub_shouldRedirectToOriginalLink_whenUrlHashProvided() throws URISyntaxException {
         LinkStub linkStub = new LinkStub(TEST_URL);
         when(linkStubService.getLinkStubByHash(anyString())).thenReturn(Optional.of(linkStub));
+        when(linkStubService.isLinkStubValid(eq(linkStub))).thenReturn(true);
 
         ResponseEntity<LinkStub> response = linkStubController.redirectLinkStub(linkStub.getUrlHash());
         assertEquals(HttpStatus.SEE_OTHER, response.getStatusCode());
         assertEquals(TEST_URL, response.getHeaders().getLocation().toString());
     }
 
+    @Test
+    public void redirectLinkStub_shouldProcessTheUseOfLinkStub_uponValidRedirect() throws URISyntaxException {
+        LinkStub linkStub = new LinkStub(TEST_URL);
+        when(linkStubService.getLinkStubByHash(anyString())).thenReturn(Optional.of(linkStub));
+        when(linkStubService.isLinkStubValid(eq(linkStub))).thenReturn(true);
+
+        linkStubController.redirectLinkStub(linkStub.getUrlHash());
+        verify(linkStubService).processLinkStubUse(eq(linkStub));
+    }
+
+    @Test
+    public void redirectLinkStub_shouldRespondGone_whenLinkStubIsInvalidated() throws URISyntaxException {
+        LinkStub linkStub = new LinkStub(TEST_URL);
+        when(linkStubService.getLinkStubByHash(anyString())).thenReturn(Optional.of(linkStub));
+        when(linkStubService.isLinkStubValid(eq(linkStub))).thenReturn(false);
+
+        ResponseEntity<LinkStub> response = linkStubController.redirectLinkStub(linkStub.getUrlHash());
+        assertEquals(HttpStatus.GONE, response.getStatusCode());
+    }
 
     @Test
     public void redirectLinkStub_shouldRespondNotFound_whenUrlHashHasNoEntry() {
