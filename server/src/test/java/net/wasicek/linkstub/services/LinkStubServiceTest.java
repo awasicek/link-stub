@@ -121,4 +121,39 @@ public class LinkStubServiceTest {
         linkStubService.resetValidity(actualSaved);
         verify(linkStubRepository).save(eq(expectedSaved));
     }
+
+    @Test
+    public void isValidUrl_shouldReturnTrue_forValidHttpUrl() {
+        boolean isValid = linkStubService.isValidUrl("http://test.com");
+
+        assertTrue(isValid);
+    }
+
+    @Test
+    public void isValidUrl_shouldReturnTrue_forValidHttpsUrl() {
+        boolean isValid = linkStubService.isValidUrl("https://test.com");
+
+        assertTrue(isValid);
+    }
+
+    @Test
+    public void isValidUrl_shouldReturnFalse_forInvalidWWWUrl() {
+        boolean isValid = linkStubService.isValidUrl("www.test.com");
+
+        assertFalse(isValid);
+    }
+
+    @Test
+    public void isValidUrl_shouldReturnFalse_forInvalidNoPrefixUrl() {
+        boolean isValid = linkStubService.isValidUrl("test.com");
+
+        assertFalse(isValid);
+    }
+
+    @Test
+    public void isValidUrl_shouldReturnFalse_forOtherwiseValidFtpUrl() {
+        boolean isValid = linkStubService.isValidUrl("ftp://test.com");
+
+        assertFalse(isValid);
+    }
 }

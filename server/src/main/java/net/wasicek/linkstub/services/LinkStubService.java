@@ -2,6 +2,7 @@ package net.wasicek.linkstub.services;
 
 import net.wasicek.linkstub.models.LinkStub;
 import net.wasicek.linkstub.repositories.LinkStubRepository;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,5 +44,10 @@ public class LinkStubService {
     public void resetValidity(LinkStub linkStub) {
         linkStub.setNumTimesUsed(0);
         linkStubRepository.save(linkStub);
+    }
+
+    public boolean isValidUrl(String url) {
+        UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
+        return urlValidator.isValid(url);
     }
 }

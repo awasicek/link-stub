@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -35,6 +36,7 @@ public class LinkStubControllerTest {
     @Test
     public void createLinkStub_shouldCreateNewLinkStub_whenItDoesNotExist() throws URISyntaxException {
         LinkStub linkStub = new LinkStub(TEST_URL);
+        when(linkStubService.isValidUrl(any())).thenReturn(true);
         when(linkStubService.getLinkStubByUrl(anyString())).thenReturn(Optional.empty());
         when(linkStubService.createLinkStub(anyString())).thenReturn(linkStub);
 
@@ -46,11 +48,23 @@ public class LinkStubControllerTest {
     @Test
     public void createLinkStub_shouldRespondWithExistingLinkStub_whenItAlreadyExists() throws URISyntaxException {
         LinkStub linkStub = new LinkStub(TEST_URL);
+        when(linkStubService.isValidUrl(any())).thenReturn(true);
         when(linkStubService.getLinkStubByUrl(anyString())).thenReturn(Optional.of(linkStub));
 
         ResponseEntity<LinkStub> response = linkStubController.createLinkStub(linkStub);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(linkStub, response.getBody());
+    }
+
+    @Test
+    public void createLinkStub_shouldRespondBadRequest_whenProvidedInvalidUrl() {
+        LinkStub linkStub = new LinkStub(TEST_URL);
+        when(linkStubService.isValidUrl(any())).thenReturn(false);
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> {
+            linkStubController.createLinkStub(linkStub);
+        });
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
     }
 
     @Test

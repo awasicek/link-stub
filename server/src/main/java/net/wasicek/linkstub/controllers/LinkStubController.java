@@ -35,11 +35,15 @@ public class LinkStubController {
     @PostMapping("/linkstub")
     ResponseEntity<LinkStub> createLinkStub(@Valid @RequestBody LinkStub linkStub) throws URISyntaxException {
         log.info("Request to create link stub: {}", linkStub);
-        Optional<LinkStub> searchResult = linkStubService.getLinkStubByUrl(linkStub.getOriginalUrl());
+        String providedUrl = linkStub.getOriginalUrl();
+        if (!linkStubService.isValidUrl(providedUrl)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Invalid URL: %s", providedUrl));
+        }
+        Optional<LinkStub> searchResult = linkStubService.getLinkStubByUrl(providedUrl);
         ResponseEntity<LinkStub> response;
         if (searchResult.isEmpty()) {
             // 201 if created new
-            LinkStub saveResult = linkStubService.createLinkStub(linkStub.getOriginalUrl());
+            LinkStub saveResult = linkStubService.createLinkStub(providedUrl);
             response = ResponseEntity
                     .created(new URI("/linkstub/" + saveResult.getUrlHash()))
                     .body(saveResult);
