@@ -11,10 +11,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -65,7 +66,7 @@ public class LinkStubServiceTest {
     }
 
     @Test
-    public void createLinkStub_shouldSaveLinkStubToDatabase_whenUrlNotAlreadyPresent() {
+    public void createLinkStub_shouldSaveLinkStubToDatabase_whenRequested() {
         LinkStub linkStub = new LinkStub(TEST_URL);
 
         linkStubService.createLinkStub(linkStub.getOriginalUrl());
@@ -73,13 +74,51 @@ public class LinkStubServiceTest {
     }
 
     @Test
-    public void createLinkStub_shouldReturnExistingLinkStubEntry_whenUrlAlreadyPresent() {
+    public void isLinkStubValid_shouldReturnValid_whenNumberTimesUsedLessThanMax() {
+        LinkStub linkStub = new LinkStub(TEST_URL);
+        linkStub.setNumTimesUsed(LinkStubService.MAX_NUM_USES - 1);
+
+        boolean isValid = linkStubService.isLinkStubValid(linkStub);
+        assertTrue(isValid);
+    }
+
+    @Test
+    public void isLinkStubValid_shouldReturnInvalid_whenNumberTimesUsedGreaterThanMax() {
+        LinkStub linkStub = new LinkStub(TEST_URL);
+        linkStub.setNumTimesUsed(LinkStubService.MAX_NUM_USES + 1);
+
+        boolean isValid = linkStubService.isLinkStubValid(linkStub);
+        assertFalse(isValid);
+    }
+
+    @Test
+    public void isLinkStubValid_shouldReturnInvalid_whenNumberTimesUsedEqualToMax() {
+        LinkStub linkStub = new LinkStub(TEST_URL);
+        linkStub.setNumTimesUsed(LinkStubService.MAX_NUM_USES);
+
+        boolean isValid = linkStubService.isLinkStubValid(linkStub);
+        assertFalse(isValid);
+    }
+
+    @Test
+    public void processLinkStubUse_shouldIncrementAndPersistTheNumberOfTimesUsed_whenRequested() {
         LinkStub linkStub = new LinkStub(TEST_URL);
 
-        when(linkStubRepository.findByOriginalUrl(eq(linkStub.getOriginalUrl()))).thenReturn(Optional.of(linkStub));
-        LinkStub linkStubCreated = linkStubService.createLinkStub(linkStub.getOriginalUrl());
+        linkStubService.processLinkStubUse(linkStub);
+        assertEquals(linkStub.getNumTimesUsed(), 1);
+        linkStubService.processLinkStubUse(linkStub);
+        assertEquals(linkStub.getNumTimesUsed(), 2);
+        verify(linkStubRepository, times(2)).save(eq(linkStub));
+    }
 
-        verify(linkStubRepository, never()).save(any(LinkStub.class));
-        assertEquals(linkStub, linkStubCreated);
+    @Test
+    public void resetValidity_shouldSaveLinkStubWithZeroNumTimesUsed_whenRequested() {
+        LinkStub actualSaved = new LinkStub(TEST_URL);
+        actualSaved.setNumTimesUsed(5);
+        LinkStub expectedSaved = new LinkStub(TEST_URL);
+        expectedSaved.setNumTimesUsed(0);
+
+        linkStubService.resetValidity(actualSaved);
+        verify(linkStubRepository).save(eq(expectedSaved));
     }
 }

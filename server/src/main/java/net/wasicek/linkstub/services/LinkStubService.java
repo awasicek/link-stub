@@ -10,7 +10,7 @@ import java.util.Optional;
 @Service
 public class LinkStubService {
 
-    private final static int MAX_NUM_USES = 10;
+    public static final int MAX_NUM_USES = 10;
 
     private LinkStubRepository linkStubRepository;
 
