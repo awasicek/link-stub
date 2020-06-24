@@ -1,4 +1,5 @@
 const HTMLWebPackPlugin = require("html-webpack-plugin");
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const path = require("path");
 
 module.exports = {
@@ -23,7 +24,8 @@ module.exports = {
         new HTMLWebPackPlugin({
             template: "./src/index.html",
             filename: "./index.html"
-        })
+        }),
+        new FaviconsWebpackPlugin("./assets/ninja.png")
     ],
     resolve: {
         extensions: [".js", ".jsx"],
