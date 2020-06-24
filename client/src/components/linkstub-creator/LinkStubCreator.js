@@ -33,13 +33,12 @@ const LinkStubCreator = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(`submitted: ${url}`);
-
+        const processedUrl = linkStubService.processUrlForDefects(url);
         // validate on frontend to stop from making unnecessary bad requests
-        if (isValidHttpUrl(url)) {
+        if (isValidHttpUrl(processedUrl)) {
             setIsUrlValid(true);
             try {
-                const response = await linkStubService.createLinkStub({ originalUrl: url });
+                const response = await linkStubService.createLinkStub({ originalUrl: processedUrl });
                 if (response.status === 200 || response.status === 201) {
                     setIsError(false);
                     const json = await response.json();
@@ -70,7 +69,7 @@ const LinkStubCreator = () => {
                             label="Enter Link"
                             onChange={handleChange}
                             error={isUrlValid === false}
-                            helperText={isUrlValid === false && "Invalid URL - must start with http: or https:"}
+                            helperText={isUrlValid === false && "Invalid URL"}
                         />
                         <ButtonWrapper>
                             <Button

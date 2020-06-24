@@ -33,4 +33,36 @@ describe("linkStubService", function () {
             expect(resultBody).toEqual(mockSuccessResponse);
         });
     });
+
+    describe("processUrlForDefects", () => {
+        it("should fix a www address missing the http/https protocol", () => {
+            const MALFORMED_TEST_URL = "www.automation.com";
+            const EXPECTED_FIXED_URL = "http://www.automation.com";
+
+            const resultantUrl = linkStubService.processUrlForDefects(MALFORMED_TEST_URL);
+            expect(resultantUrl).toEqual(EXPECTED_FIXED_URL);
+        });
+
+        it("should fix a 'plain' address missing the http/https protocol", () => {
+            const MALFORMED_TEST_URL = "automation.com";
+            const EXPECTED_FIXED_URL = "http://automation.com";
+
+            const resultantUrl = linkStubService.processUrlForDefects(MALFORMED_TEST_URL);
+            expect(resultantUrl).toEqual(EXPECTED_FIXED_URL);
+        });
+
+        it("should leave untouched a valid http address", () => {
+            const VALID_TEST_URL = "http://test.edu";
+
+            const resultantUrl = linkStubService.processUrlForDefects(VALID_TEST_URL);
+            expect(resultantUrl).toEqual(VALID_TEST_URL);
+        });
+
+        it("should leave untouched a valid https address", () => {
+            const VALID_TEST_URL = "https://test.edu";
+
+            const resultantUrl = linkStubService.processUrlForDefects(VALID_TEST_URL);
+            expect(resultantUrl).toEqual(VALID_TEST_URL);
+        });
+    });
 });
