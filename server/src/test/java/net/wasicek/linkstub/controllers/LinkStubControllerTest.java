@@ -1,5 +1,6 @@
 package net.wasicek.linkstub.controllers;
 
+import net.wasicek.linkstub.exceptions.InvalidLinkStubException;
 import net.wasicek.linkstub.models.LinkStub;
 import net.wasicek.linkstub.services.LinkStubService;
 import org.junit.jupiter.api.Test;
@@ -89,13 +90,15 @@ public class LinkStubControllerTest {
     }
 
     @Test
-    public void redirectLinkStub_shouldRespondGone_whenLinkStubIsInvalidated() throws URISyntaxException {
+    public void redirectLinkStub_shouldRespondGone_whenLinkStubIsInvalidated() {
         LinkStub linkStub = new LinkStub(TEST_URL);
         when(linkStubService.getLinkStubByHash(anyString())).thenReturn(Optional.of(linkStub));
         when(linkStubService.isLinkStubValid(eq(linkStub))).thenReturn(false);
 
-        ResponseEntity<LinkStub> response = linkStubController.redirectLinkStub(linkStub.getUrlHash());
-        assertEquals(HttpStatus.GONE, response.getStatusCode());
+        InvalidLinkStubException ex = assertThrows(InvalidLinkStubException.class, () -> {
+            linkStubController.redirectLinkStub(linkStub.getUrlHash());
+        });
+        assertEquals(HttpStatus.GONE, ex.getStatus());
     }
 
     @Test

@@ -1,6 +1,7 @@
 package net.wasicek.linkstub.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import net.wasicek.linkstub.exceptions.InvalidLinkStubException;
 import net.wasicek.linkstub.models.LinkStub;
 import net.wasicek.linkstub.services.LinkStubService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,8 +69,7 @@ public class LinkStubController {
         } else {
             LinkStub foundStub = searchResult.get();
             if (!linkStubService.isLinkStubValid(foundStub)) {
-                // need to disable caching so requests to recreated links work
-                response = ResponseEntity.status(HttpStatus.GONE).cacheControl(CacheControl.noCache()).body(foundStub);
+                throw new InvalidLinkStubException(String.format("The Link Stub http://linkstub.ninja/%s has expired.", urlHash));
             } else {
                 URI originalLocation = new URI(foundStub.getOriginalUrl());
                 HttpHeaders httpHeaders = new HttpHeaders();
