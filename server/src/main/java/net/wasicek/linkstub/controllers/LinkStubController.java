@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.wasicek.linkstub.models.LinkStub;
 import net.wasicek.linkstub.services.LinkStubService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,28 +45,36 @@ public class LinkStubController {
                     .created(new URI("/api/linkstub/" + saveResult.getUrlHash()))
                     .body(saveResult);
         } else {
+            LinkStub foundStub = searchResult.get();
+            linkStubService.resetValidity(foundStub);
             // 200 if already existed
-            response = ResponseEntity.ok().body(searchResult.get());
+            response = ResponseEntity.ok().body(foundStub);
         }
         return response;
     }
 
     @GetMapping("/{urlHash}")
     public ResponseEntity<LinkStub> redirectLinkStub(@PathVariable String urlHash) throws URISyntaxException {
-        Optional<LinkStub> linkStub = linkStubService.getLinkStubByHash(urlHash);
+        Optional<LinkStub> searchResult = linkStubService.getLinkStubByHash(urlHash);
         ResponseEntity<LinkStub> response;
         log.info("Redirect request for URL hash: {}", urlHash);
-        if (linkStub.isPresent()) {
-            URI originalLocation = new URI(linkStub.get().getOriginalUrl());
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.setLocation(originalLocation);
-            // TODO 303 correct status code?
-            response = new ResponseEntity<>(httpHeaders, HttpStatus.SEE_OTHER);
-        } else {
+        if (searchResult.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     String.format("Link Stub not found for %s.", urlHash)
             );
+        } else {
+            LinkStub foundStub = searchResult.get();
+            if (!linkStubService.isLinkStubValid(foundStub)) {
+                // need to disable caching so requests to recreated links work
+                response = ResponseEntity.status(HttpStatus.GONE).cacheControl(CacheControl.noCache()).body(foundStub);
+            } else {
+                URI originalLocation = new URI(foundStub.getOriginalUrl());
+                HttpHeaders httpHeaders = new HttpHeaders();
+                httpHeaders.setLocation(originalLocation);
+                linkStubService.processLinkStubUse(foundStub);
+                response = new ResponseEntity<>(httpHeaders, HttpStatus.SEE_OTHER);
+            }
         }
         return response;
      }
