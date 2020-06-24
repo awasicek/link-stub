@@ -10,7 +10,11 @@ module.exports = {
                 test: /\.jsx?$/, // js and jsx
                 exclude: /node_modules/,
                 use: "babel-loader"
-            }
+            },
+            {
+                test: /\.(png|svg|jpg|gif)$/,
+                use: ["file-loader"],
+            },
         ]
     },
     plugins: [
@@ -26,7 +30,8 @@ module.exports = {
         alias: {
             "@components": path.resolve(__dirname, "src/components/"),
             "@services": path.resolve(__dirname, "src/services/"),
-            "@utils": path.resolve(__dirname, "src/utils/")
+            "@utils": path.resolve(__dirname, "src/utils/"),
+            "@assets": path.resolve(__dirname, "assets/")
         }
     },
     entry: {

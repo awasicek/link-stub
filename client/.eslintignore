@@ -4,3 +4,4 @@ webpack.base.config.js
 webpack.dev.config.js
 webpack.prod.config.js
 .eslintrc.js
+src/__mocks__

@@ -9,7 +9,7 @@ import { isValidHttpUrl } from "@utils";
 
 const ButtonWrapper = styled.div`
     display: inline-block;
-    margin-top: 10px;
+    margin-top: 17px;
     padding: 0 10px;
 `;
 
@@ -75,9 +75,9 @@ const LinkStubCreator = () => {
                         <ButtonWrapper>
                             <Button
                                 type="submit"
-                                variant="contained"
+                                variant="outlined"
                                 color="primary"
-                                size="medium"
+                                size="small"
                                 startIcon={<AddIcon />}
                             >
                                 Create
